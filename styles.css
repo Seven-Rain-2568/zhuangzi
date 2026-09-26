@@ -727,6 +727,8 @@ body.hide-note .seg-note { display: none; }
   gap: 10px;
 }
 .hook {
+  display: flex;
+  flex-direction: column;
   padding: 14px 16px;
   background: var(--bg-tint);
   border-radius: 8px;
@@ -740,6 +742,139 @@ body.hide-note .seg-note { display: none; }
   color: var(--accent-ink);
 }
 .hook p { margin: 0; font-size: 12.5px; line-height: 1.9; color: var(--ink-soft); }
+
+/* 钩子 -> 原文的跳转 */
+.hook-jump {
+  align-self: flex-start;
+  margin-top: 10px;
+  font: inherit;
+  font-size: 11.5px;
+  color: var(--accent-ink);
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s;
+}
+.hook-jump:hover { background: var(--accent-soft); }
+.hook-src {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--ink-faint);
+}
+
+/* ============================================================
+   完整 / 节选 / 待收录 标记
+   ============================================================ */
+.chapter-title { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; }
+
+.chapter-status {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border-radius: 3px;
+  padding: 2px 8px;
+  vertical-align: middle;
+}
+.chapter-status.partial { color: var(--ink-soft); background: var(--bg-tint); }
+.chapter-status.planned { color: var(--ink-faint); background: var(--bg-tint); }
+
+.chapter-note {
+  margin: 0 0 16px;
+  padding: 9px 13px;
+  font-size: 12.5px;
+  line-height: 1.9;
+  color: var(--ink-faint);
+  background: var(--bg-tint);
+  border-radius: 6px;
+}
+
+/* 目录里的状态小标 */
+.toc-badge {
+  display: inline-block;
+  margin-left: 7px;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--ink-faint);
+  background: var(--bg-tint);
+  border-radius: 3px;
+  padding: 1px 6px;
+  vertical-align: 1px;
+}
+.toc-item.active .toc-badge { color: var(--accent-ink); background: var(--paper); }
+
+/* 难词注释 */
+.gloss {
+  margin: 12px 0 0;
+  padding: 11px 15px;
+  font-size: .84em;
+  line-height: 1.9;
+  background: var(--bg-tint);
+  border-radius: 7px;
+  border-left: 2px solid var(--line);
+}
+.gloss dt {
+  display: inline;
+  font-weight: 700;
+  color: var(--accent-ink);
+  letter-spacing: .03em;
+}
+.gloss dd {
+  display: inline;
+  margin: 0;
+  color: var(--ink-soft);
+}
+.gloss dd::after { content: ""; display: block; margin-bottom: 5px; }
+.gloss dt::after { content: "："; }
+body.hide-note .gloss { display: none; }
+
+/* 外篇杂篇清单 */
+.planned { padding-top: 10px; }
+.planned h3 {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  color: var(--ink);
+}
+.planned-note {
+  margin: 0 0 22px;
+  font-size: 13px;
+  line-height: 2;
+  color: var(--ink-faint);
+}
+.planned-row {
+  display: flex;
+  gap: 14px;
+  padding: 13px 0;
+  border-top: 1px solid var(--line-soft);
+}
+.planned-name {
+  flex: 0 0 46px;
+  font-family: var(--serif);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: var(--accent-ink);
+}
+.planned-items {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 2;
+  color: var(--ink-soft);
+  word-break: break-word;
+}
 
 /* ============================================================
    窄屏

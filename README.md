@@ -42,7 +42,7 @@ reader.html   阅读页 —— ?book=书id#篇目id，左侧篇目目录，右�
 
 两步，**不用改任何代码**：
 
-**第 1 步**：在 `books/` 下新建 `书名.js`，照 `books/zhuangzi.js` 的格式写：
+**第 1 步**：在 `books/` 下新建 `书名.js`，照 `books/zhuangzi.js` 的格式写。每本书有两层数据：
 
 ```js
 window.BOOKS = window.BOOKS || {};
@@ -51,22 +51,40 @@ window.BOOKS.wangwei = {
   title: "王维诗选",
   author: "王维（唐）",
   intro: "一段导读，显示在阅读页左侧。",
+
+  // 第一层：篇目
   chapters: [
     {
-      id: "shanjuqiuMing",
+      id: "shanjuqiuming",
       title: "山居秋暝",
       source: "《王右丞集》",
+      status: "full",        // full=完整原文 / partial=节选
       summary: "一句话说明这篇讲什么。",
       tags: ["唐诗", "山水"],
+      note: "节选时必须写清楚收了哪些，读者才知道自己读的不是全部。",
       segments: [
-        { text: "空山新雨后，天气晚来秋……", note: "白话解释。" }
+        {
+          text: "空山新雨后，天气晚来秋……",   // 原文
+          gloss: [ { w: "暝", d: "日落时分。" } ],  // 难词注释，可选
+          note: "白话解释，可选。"                 // 白话，可选
+        }
       ]
     }
   ],
-  // 可选：速查卡片，不出现在篇目目录里
+
+  // 可选：已列目录但还没录正文的篇目
+  planned: {
+    title: "其他篇目（待收录）",
+    note: "说明为什么还没收。",
+    groups: [ { name: "五言", items: ["鹿柴", "竹里馆"] } ]
+  },
+
+  // 第二层：钩子，可以跳转到 chapters 里的篇目
   hooksTitle: "名句速查",
   hooksNote: "说明这段话怎么用。",
-  hooks: [ { text: "行到水穷处", note: "解释。" } ]
+  hooks: [
+    { text: "行到水穷处", chapter: "shanjuqiuming", note: "解释。" }
+  ]
 };
 ```
 
@@ -81,6 +99,17 @@ window.BOOKS.wangwei = {
 > `id` 三处必须一致（文件名随意，指向对就行）。`file` 路径相对于站点根目录。
 
 刷新页面即可。**想加新分类**，就往 `manifest.js` 的 `categories` 里追加一组，格式照着现有的写。
+
+## 三个状态标记的含义
+
+| 标记 | 含义 |
+| --- | --- |
+| **全篇** | 这篇的原文完整收录了 |
+| **节选** | 只收了部分段落，篇内会说明收了什么 |
+| **待收录** | 目录里有，正文还没录 |
+
+钩子卡片如果有对应篇目，会显示「见《某某》→」按钮，点一下跳到原文；
+出自未收录篇章的，会直接标出来源（如「《至乐》未收录」），不假装有。
 
 ## 阅读页功能
 

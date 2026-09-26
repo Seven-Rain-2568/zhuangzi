@@ -13,6 +13,8 @@
     backBtn: $("backBtn"), sideReturn: $("sideReturn"),
     source: $("chapterSource"), title: $("chapterTitle"),
     summary: $("chapterSummary"), tags: $("chapterTags"),
+    status: $("chapterStatus"), chapterNote: $("chapterNote"),
+    planned: $("planned"),
     segments: $("segments"), progressFill: $("progressFill"), progressText: $("progressText"),
     prevBtn: $("prevBtn"), nextBtn: $("nextBtn"),
     modeBtn: $("modeBtn"), themeBtn: $("themeBtn"),
@@ -79,6 +81,9 @@
     el.sideIntro.hidden = !book.intro;
   }
 
+  /* ---------------- 篇目状态 ---------------- */
+  var STATUS_LABEL = { full: "全篇", partial: "节选", planned: "待收录" };
+
   /* ---------------- 目录 ---------------- */
   function renderToc() {
     el.toc.innerHTML = "";
@@ -92,6 +97,13 @@
       var label = document.createElement("span");
       label.textContent = c.title;
 
+      if (c.status && c.status !== "full") {
+        var badge = document.createElement("i");
+        badge.className = "toc-badge " + c.status;
+        badge.textContent = STATUS_LABEL[c.status] || c.status;
+        label.appendChild(badge);
+      }
+
       var small = document.createElement("small");
       var done = prog[c.id] || 0, total = c.segments.length;
       small.textContent = done >= total
@@ -102,6 +114,61 @@
       b.appendChild(small);
       b.addEventListener("click", function () { go(i); closeSidebar(); });
       el.toc.appendChild(b);
+    });
+
+    /* 外篇杂篇整体作为目录末尾的一项，点进去看篇目清单 */
+    if (book.planned) {
+      var pb = document.createElement("button");
+      pb.className = "toc-item" + (state.chapter === -1 ? " active" : "");
+      pb.type = "button";
+
+      var plabel = document.createElement("span");
+      plabel.textContent = "外篇 · 杂篇";
+      var pbadge = document.createElement("i");
+      pbadge.className = "toc-badge planned";
+      pbadge.textContent = "待收录";
+      plabel.appendChild(pbadge);
+
+      var psmall = document.createElement("small");
+      var n = 0;
+      (book.planned.groups || []).forEach(function (g) { n += g.items.length; });
+      psmall.textContent = n + " 篇未录";
+
+      pb.appendChild(plabel);
+      pb.appendChild(psmall);
+      pb.addEventListener("click", function () { go(-1); closeSidebar(); });
+      el.toc.appendChild(pb);
+    }
+  }
+
+  /* 外篇杂篇：列目录，但还没正文 */
+  function renderPlanned() {
+    var host = $("planned");
+    var p = book.planned;
+    if (!host) { return; }
+    if (!p || !p.groups) { host.hidden = true; return; }
+
+    host.hidden = false;
+    $("plannedTitle").textContent = p.title || "待收录";
+    $("plannedNote").textContent = p.note || "";
+    var body = $("plannedBody");
+    body.innerHTML = "";
+
+    p.groups.forEach(function (g) {
+      var row = document.createElement("div");
+      row.className = "planned-row";
+
+      var name = document.createElement("span");
+      name.className = "planned-name";
+      name.textContent = g.name;
+
+      var items = document.createElement("span");
+      items.className = "planned-items";
+      items.textContent = g.items.join(" · ");
+
+      row.appendChild(name);
+      row.appendChild(items);
+      body.appendChild(row);
     });
   }
 
@@ -123,6 +190,20 @@
     el.source.textContent = c.source || "";
     el.title.textContent = c.title;
     el.summary.textContent = c.summary || "";
+
+    /* 篇目状态 + 提示：让读者一眼知道这篇是不是全的 */
+    el.chapterNote.hidden = true;
+    el.chapterNote.textContent = "";
+    el.status.textContent = "";
+    el.status.className = "chapter-status";
+    if (c.status && c.status !== "full") {
+      el.status.textContent = STATUS_LABEL[c.status] || c.status;
+      el.status.classList.add(c.status);
+    }
+    if (c.note) {
+      el.chapterNote.hidden = false;
+      el.chapterNote.textContent = c.note;
+    }
 
     el.tags.innerHTML = "";
     (c.tags || []).forEach(function (t) {
@@ -148,6 +229,21 @@
       wrap.appendChild(idx);
       wrap.appendChild(p);
 
+      /* 难词注释：只在你有疑问时看，不打断阅读节奏 */
+      if (seg.gloss && seg.gloss.length) {
+        var gl = document.createElement("dl");
+        gl.className = "gloss";
+        seg.gloss.forEach(function (g) {
+          var dt = document.createElement("dt");
+          dt.textContent = g.w;
+          var dd = document.createElement("dd");
+          dd.textContent = g.d;
+          gl.appendChild(dt);
+          gl.appendChild(dd);
+        });
+        wrap.appendChild(gl);
+      }
+
       if (seg.note) {
         var n = document.createElement("p");
         n.className = "seg-note";
@@ -169,6 +265,13 @@
     }
   }
 
+  function markPlannedUrl() {
+    var url = "reader.html?book=" + encodeURIComponent(found.meta.id) + "#planned";
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState(null, "", url);
+    }
+  }
+
   function renderHooks() {
     var list = book.hooks || [];
     if (!list.length) { el.hooks.hidden = true; return; }
@@ -181,10 +284,30 @@
       d.className = "hook";
       var t = document.createElement("h4");
       t.textContent = h.text;
+      d.appendChild(t);
+
       var p = document.createElement("p");
       p.textContent = h.note;
-      d.appendChild(t);
       d.appendChild(p);
+
+      /* 有对应篇目的，点一下就能跳过去看原文 */
+      if (h.chapter) {
+        var ci = book.chapters.map(function (c) { return c.id; }).indexOf(h.chapter);
+        if (ci >= 0) {
+          var a = document.createElement("button");
+          a.type = "button";
+          a.className = "hook-jump";
+          a.textContent = "见《" + book.chapters[ci].title + "》→";
+          a.addEventListener("click", function () { go(ci); });
+          d.appendChild(a);
+        }
+      } else if (h.source) {
+        var s = document.createElement("span");
+        s.className = "hook-src";
+        s.textContent = h.source;
+        d.appendChild(s);
+      }
+
       el.hookGrid.appendChild(d);
     });
   }
@@ -200,11 +323,67 @@
     el.progressText.textContent = done + " / " + total + " 段";
   }
 
+  /* 外篇杂篇清单：只列篇名，没有正文 */
+  function renderPlanned() {
+    var host = el.planned;
+    var p = book.planned;
+    if (!host) { return; }
+    if (!p || !p.groups) { host.hidden = true; return; }
+
+    host.hidden = false;
+    $("plannedTitle").textContent = p.title || "待收录";
+    $("plannedNote").textContent = p.note || "";
+    var body = $("plannedBody");
+    body.innerHTML = "";
+
+    p.groups.forEach(function (g) {
+      var row = document.createElement("div");
+      row.className = "planned-row";
+
+      var name = document.createElement("span");
+      name.className = "planned-name";
+      name.textContent = g.name;
+
+      var items = document.createElement("span");
+      items.className = "planned-items";
+      items.textContent = g.items.join(" · ");
+
+      row.appendChild(name);
+      row.appendChild(items);
+      body.appendChild(row);
+    });
+  }
+
   function go(i) {
-    if (i < 0 || i >= book.chapters.length) { return; }
+    if (i < -1) { return; }
+    if (i >= book.chapters.length) { return; }
+
     state.chapter = i;
+
+    if (i === -1) {
+      /* 外篇杂篇：只展示篇目清单 */
+      $("chapterHead").hidden = true;
+      $("progressWrap").hidden = true;
+      el.segments.hidden = true;
+      el.hooks.hidden = true;
+      $("chapterPager").hidden = true;
+      el.prevBtn.disabled = true;
+      el.nextBtn.disabled = true;
+      renderPlanned();
+      renderToc();
+      markPlannedUrl();
+      window.scrollTo({ top: 0, behavior: "auto" });
+      return;
+    }
+
+    $("chapterHead").hidden = false;
+    $("progressWrap").hidden = false;
+    el.segments.hidden = false;
+    $("chapterPager").hidden = false;
+    renderPlanned();
     renderToc();
     renderChapter();
+    renderHooks();
     observeSegments();
   }
 
@@ -291,11 +470,13 @@
   /* ---------------- 启动 ---------------- */
   function startChapterIndex() {
     var hash = (window.location.hash || "").replace("#", "");
+    if (hash === "planned") { return -1; }
     if (hash) {
       var i = book.chapters.map(function (c) { return c.id; }).indexOf(hash);
       if (i >= 0) { return i; }
     }
     var last = window.STORE.lastChapter(found.cat.id, found.meta.id);
+    if (last === "planned") { return -1; }
     var j = book.chapters.map(function (c) { return c.id; }).indexOf(last);
     return j >= 0 ? j : 0;
   }
