@@ -30,7 +30,8 @@ jobs:
       - name: 打包站点文件
         run: |
           mkdir -p _site
-          cp index.html styles.css app.js data.js _site/
+          cp index.html reader.html styles.css _site/
+          cp -r js books _site/
           touch _site/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3

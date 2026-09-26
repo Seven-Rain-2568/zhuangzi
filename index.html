@@ -3,70 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>庄子选读</title>
+<title>我的读书站</title>
 <link rel="stylesheet" href="styles.css">
+<script>
+  /* 尽早应用深色模式，避免打开时白一下再变黑 */
+  try {
+    var s = JSON.parse(localStorage.getItem("lib.settings") || "{}");
+    var t = (s.theme === "dark" || s.theme === "light") ? s.theme
+          : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", t);
+    if (typeof s.font === "number" && s.font >= 15 && s.font <= 30) {
+      document.documentElement.style.setProperty("--fs", s.font + "px");
+    }
+  } catch (e) {}
+</script>
 </head>
-<body>
+<body class="shelf-page">
 
 <header class="topbar">
-  <button class="icon-btn menu-btn" id="menuBtn" aria-label="打开目录">☰</button>
   <div class="brand">
-    <span class="brand-name" id="brandName">庄子选读</span>
-    <span class="brand-sub" id="brandSub"></span>
+    <span class="brand-name" id="siteTitle">我的读书站</span>
+    <span class="brand-sub" id="siteSubtitle"></span>
   </div>
   <div class="tools">
-    <button class="icon-btn" id="modeBtn" title="显示或隐藏白话">对照：开</button>
     <button class="icon-btn" id="fontDec" title="缩小字号">A−</button>
     <button class="icon-btn" id="fontInc" title="放大字号">A+</button>
     <button class="icon-btn" id="themeBtn" title="切换深色/浅色">夜</button>
   </div>
 </header>
 
-<div class="layout">
+<main class="shelf">
 
-  <aside class="sidebar" id="sidebar">
-    <div class="side-intro">
-      <h1 id="sideTitle"></h1>
-      <p id="sideSub"></p>
-    </div>
-    <nav class="toc" id="toc" aria-label="目录"></nav>
-    <div class="side-tip" id="sideIntro"></div>
-  </aside>
+  <section class="hero">
+    <h1 id="heroTitle"></h1>
+    <p id="heroIntro"></p>
+  </section>
 
-  <div class="scrim" id="scrim"></div>
+  <div class="shelf-bar">
+    <input type="search" id="filter" class="filter" placeholder="搜索书名、作者、标签…" aria-label="搜索">
+    <span class="shelf-stat" id="shelfStat"></span>
+  </div>
 
-  <main class="reader" id="reader">
-    <article class="paper">
+  <div id="categories"></div>
 
-      <header class="chapter-head">
-        <p class="chapter-source" id="chapterSource"></p>
-        <h2 class="chapter-title" id="chapterTitle"></h2>
-        <p class="chapter-summary" id="chapterSummary"></p>
-        <div class="chapter-tags" id="chapterTags"></div>
-      </header>
+  <section class="howto">
+    <h2>怎么加书</h2>
+    <ol>
+      <li>在 <code>books/</code> 目录里新建一个 <code>书名.js</code>，照 <code>books/zhuangzi.js</code> 的格式填内容。</li>
+      <li>打开 <code>books/manifest.js</code>，在该分类的 <code>books</code> 数组里加一项，指向刚建的文件。</li>
+      <li>刷新页面即可，<strong>不用改任何代码</strong>。</li>
+    </ol>
+  </section>
 
-      <div class="progress-wrap">
-        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-        <span class="progress-text" id="progressText">0 / 0 段</span>
-      </div>
+  <footer class="foot">
+    <span id="footNote"></span>
+  </footer>
 
-      <div class="segments" id="segments"></div>
+</main>
 
-      <nav class="pager">
-        <button class="pager-btn" id="prevBtn">← 上一篇</button>
-        <button class="pager-btn" id="nextBtn">下一篇 →</button>
-      </nav>
-
-      <footer class="foot">
-        原文为公有领域古籍；白话与导读为本站整理，仅供自己读着用。
-      </footer>
-
-    </article>
-  </main>
-
-</div>
-
-<script src="data.js"></script>
-<script src="app.js"></script>
+<script src="books/manifest.js"></script>
+<script src="js/store.js"></script>
+<script src="js/shelf.js"></script>
 </body>
 </html>
