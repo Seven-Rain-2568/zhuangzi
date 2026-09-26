@@ -6,8 +6,20 @@
   var state = { filter: "", theme: "light", font: 19 };
 
   var $ = function (id) { return document.getElementById(id); };
+  var NS = "http://www.w3.org/2000/svg";
 
-  /* 收集所有书的元数据，顺便统计总量 */
+  /* 用 SVG 图标替代字符按钮，跨设备渲染一致 */
+  function setIcon(btn, id) {
+    if (!btn) { return; }
+    btn.innerHTML = "";
+    var svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("class", "icon");
+    var use = document.createElementNS(NS, "use");
+    use.setAttribute("href", "#" + id);
+    svg.appendChild(use);
+    btn.appendChild(svg);
+  }
+
   function flatBooks() {
     var out = [];
     LIB.categories.forEach(function (cat) {
@@ -31,9 +43,10 @@
     $("heroTitle").textContent = LIB.siteTitle || "我的读书站";
     $("heroIntro").textContent = LIB.siteIntro || "";
     $("footNote").textContent = "共 " + flatBooks().length + " 本书 · " +
-      LIB.categories.length + " 个分类 · 纯本地站点，进度存在这台设备上";
-    $("themeBtn").textContent = state.theme === "dark" ? "日" : "夜";
+      LIB.categories.length + " 个分类 · 进度保存在这台设备上";
+    setIcon($("themeBtn"), state.theme === "dark" ? "i-sun" : "i-moon");
     $("themeBtn").classList.toggle("on", state.theme === "dark");
+    $("themeBtn").title = state.theme === "dark" ? "切换到浅色" : "切换到深色";
   }
 
   function bookCard(entry) {
@@ -42,9 +55,12 @@
     card.className = "book-card";
     card.href = "reader.html?book=" + encodeURIComponent(b.id);
 
-    var cover = document.createElement("div");
-    cover.className = "book-cover";
-    cover.textContent = b.cover || (b.title || "书").slice(0, 1);
+    // 书脊：竖排书名首字
+    var spine = document.createElement("div");
+    spine.className = "spine";
+    var spineText = document.createElement("span");
+    spineText.textContent = b.cover || (b.title || "书").slice(0, 1);
+    spine.appendChild(spineText);
 
     var body = document.createElement("div");
     body.className = "book-body";
@@ -81,9 +97,8 @@
       if (k !== "_last") { hasProgress = true; doneSeg += prog[k]; }
     });
 
-    // 总段数在打开这本书时缓存过；没有缓存就只报已读段数，不去加载整本书
     var totalSeg = window.STORE.getTotal(entry.cat.id, b.id);
-    var chapterCount = window.STORE.getChapterCount(entry.cat.id, b.id) || (b.chapters ? b.chapters.length : 0);
+    var chapterCount = window.STORE.getChapterCount(entry.cat.id, b.id);
 
     var foot = document.createElement("div");
     foot.className = "book-foot";
@@ -100,12 +115,12 @@
 
       var t = document.createElement("span");
       t.className = "mini-text";
-      t.textContent = pct >= 100 ? "已读完 · " + totalSeg + " 段" : "读 " + pct + "% · " + doneSeg + "/" + totalSeg + " 段";
+      t.textContent = pct >= 100 ? "已读完" : "读 " + pct + "%";
       foot.appendChild(t);
     } else if (hasProgress) {
       var t3 = document.createElement("span");
       t3.className = "mini-text";
-      t3.textContent = "已读 " + doneSeg + " 段" + (chapterCount ? " · 共 " + chapterCount + " 篇" : "");
+      t3.textContent = "已读 " + doneSeg + " 段";
       foot.appendChild(t3);
     } else {
       var t2 = document.createElement("span");
@@ -115,7 +130,7 @@
     }
 
     body.appendChild(foot);
-    card.appendChild(cover);
+    card.appendChild(spine);
     card.appendChild(body);
     return card;
   }
@@ -138,6 +153,7 @@
       head.className = "category-head";
 
       var h2 = document.createElement("h2");
+      h2.className = "category-name";
       h2.textContent = cat.name;
       head.appendChild(h2);
 
@@ -178,17 +194,6 @@
       document.documentElement.setAttribute("data-theme", state.theme);
       window.STORE.patchSettings({ theme: state.theme });
       applyChrome();
-    });
-
-    $("fontInc").addEventListener("click", function () {
-      state.font = Math.min(30, state.font + 1);
-      document.documentElement.style.setProperty("--fs", state.font + "px");
-      window.STORE.patchSettings({ font: state.font });
-    });
-    $("fontDec").addEventListener("click", function () {
-      state.font = Math.max(15, state.font - 1);
-      document.documentElement.style.setProperty("--fs", state.font + "px");
-      window.STORE.patchSettings({ font: state.font });
     });
 
     var timer = null;

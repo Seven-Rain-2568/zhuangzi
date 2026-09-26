@@ -19,31 +19,46 @@
 </head>
 <body class="reader-page">
 
+<!-- 图标库 -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M14.5 6L9 12l5.5 6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9.5 6L15 12l-5.5 6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.2 8.2 0 0 1 9.5 4a8.4 8.4 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.5v2.2M12 19.3v2.2M21.5 12h-2.2M4.7 12H2.5M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6M18.7 18.7l-1.6-1.6M6.9 6.9L5.3 5.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M6 12h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-para" viewBox="0 0 24 24"><path d="M7 5h11M7 10h11M7 15h8M7 20h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+</svg>
+
 <header class="topbar">
-  <button class="icon-btn menu-btn" id="menuBtn" aria-label="打开目录">☰</button>
-  <a class="back-btn" id="backBtn" href="index.html" title="返回书架">← 书架</a>
+  <button class="tbtn icon-only menu-btn" id="menuBtn" aria-label="打开目录"></button>
+  <a class="back-link" id="backBtn" href="index.html">
+    <svg class="icon" aria-hidden="true"><use href="#i-back"></use></svg>书架
+  </a>
   <div class="brand">
     <span class="brand-name" id="brandName">阅读中…</span>
     <span class="brand-sub" id="brandSub"></span>
   </div>
   <div class="tools">
-    <button class="icon-btn" id="modeBtn" title="显示或隐藏白话">对照：开</button>
-    <button class="icon-btn" id="fontDec" title="缩小字号">A−</button>
-    <button class="icon-btn" id="fontInc" title="放大字号">A+</button>
-    <button class="icon-btn" id="themeBtn" title="切换深色/浅色">夜</button>
+    <button class="tbtn" id="modeBtn" title="显示或隐藏白话">对照</button>
+    <button class="tbtn icon-only" id="fontDec" title="缩小字号" aria-label="缩小字号"><svg class="icon"><use href="#i-minus"></use></svg></button>
+    <button class="tbtn icon-only" id="fontInc" title="放大字号" aria-label="放大字号"><svg class="icon"><use href="#i-plus"></use></svg></button>
+    <button class="tbtn icon-only" id="themeBtn" title="切换深色/浅色" aria-label="切换深色或浅色"></button>
   </div>
 </header>
 
 <div class="layout">
 
   <aside class="sidebar" id="sidebar">
-    <div class="side-intro">
-      <p class="side-crumb" id="sideCrumb"></p>
-      <h1 id="sideTitle">阅读中…</h1>
-      <p id="sideSub"></p>
-    </div>
+    <p class="side-crumb" id="sideCrumb"></p>
+    <h1 class="side-title" id="sideTitle">阅读中…</h1>
+    <p class="side-author" id="sideAuthor"></p>
+    <p class="side-intro" id="sideIntro"></p>
     <nav class="toc" id="toc" aria-label="目录"></nav>
-    <button class="side-return" id="sideReturn" type="button">← 返回书架</button>
+    <button class="side-return" id="sideReturn" type="button">
+      <svg class="icon" aria-hidden="true"><use href="#i-back"></use></svg>返回书架
+    </button>
   </aside>
 
   <div class="scrim" id="scrim"></div>

@@ -20,27 +20,41 @@
 </head>
 <body class="shelf-page">
 
+<!-- 图标库 -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M14.5 6L9 12l5.5 6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.2 8.2 0 0 1 9.5 4a8.4 8.4 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.5v2.2M12 19.3v2.2M21.5 12h-2.2M4.7 12H2.5M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6M18.7 18.7l-1.6-1.6M6.9 6.9L5.3 5.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M6 12h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M15.5 15.5L20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+</svg>
+
 <header class="topbar">
   <div class="brand">
     <span class="brand-name" id="siteTitle">我的读书站</span>
     <span class="brand-sub" id="siteSubtitle"></span>
   </div>
   <div class="tools">
-    <button class="icon-btn" id="fontDec" title="缩小字号">A−</button>
-    <button class="icon-btn" id="fontInc" title="放大字号">A+</button>
-    <button class="icon-btn" id="themeBtn" title="切换深色/浅色">夜</button>
+    <button class="tbtn icon-only" id="themeBtn" title="切换深色/浅色" aria-label="切换深色或浅色"></button>
   </div>
 </header>
 
 <main class="shelf">
 
   <section class="hero">
+    <p class="hero-eyebrow">Reading Shelf</p>
     <h1 id="heroTitle"></h1>
+    <div class="hero-rule"></div>
     <p id="heroIntro"></p>
   </section>
 
   <div class="shelf-bar">
-    <input type="search" id="filter" class="filter" placeholder="搜索书名、作者、标签…" aria-label="搜索">
+    <div class="search-wrap">
+      <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+      <input type="search" id="filter" class="filter" placeholder="搜索书名、作者、标签…" aria-label="搜索">
+    </div>
     <span class="shelf-stat" id="shelfStat"></span>
   </div>
 
@@ -49,7 +63,7 @@
   <section class="howto">
     <h2>怎么加书</h2>
     <ol>
-      <li>在 <code>books/</code> 目录里新建一个 <code>书名.js</code>，照 <code>books/zhuangzi.js</code> 的格式填内容。</li>
+      <li>在 <code>books/</code> 目录里新建 <code>书名.js</code>，照 <code>books/zhuangzi.js</code> 的格式填内容。</li>
       <li>打开 <code>books/manifest.js</code>，在该分类的 <code>books</code> 数组里加一项，指向刚建的文件。</li>
       <li>刷新页面即可，<strong>不用改任何代码</strong>。</li>
     </ol>

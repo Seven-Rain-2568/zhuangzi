@@ -3,10 +3,12 @@
   "use strict";
 
   var $ = function (id) { return document.getElementById(id); };
+  var NS = "http://www.w3.org/2000/svg";
 
   var el = {
     brandName: $("brandName"), brandSub: $("brandSub"),
-    sideCrumb: $("sideCrumb"), sideTitle: $("sideTitle"), sideSub: $("sideSub"),
+    sideCrumb: $("sideCrumb"), sideTitle: $("sideTitle"),
+    sideAuthor: $("sideAuthor"), sideIntro: $("sideIntro"),
     toc: $("toc"), sidebar: $("sidebar"), scrim: $("scrim"), menuBtn: $("menuBtn"),
     backBtn: $("backBtn"), sideReturn: $("sideReturn"),
     source: $("chapterSource"), title: $("chapterTitle"),
@@ -18,40 +20,51 @@
     hooks: $("hooks"), hooksTitle: $("hooksTitle"), hooksNote: $("hooksNote"), hookGrid: $("hookGrid")
   };
 
-  var found = null;      // { cat, meta }
-  var book = null;       // 书的数据（含 chapters）
+  var found = null;
+  var book = null;
   var state = { chapter: 0, showNote: true, theme: "light", font: 19, reached: {} };
   var observer = null;
 
-  /* ---------------- 出错提示 ---------------- */
+  function setIcon(btn, id) {
+    if (!btn) { return; }
+    btn.innerHTML = "";
+    var svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("class", "icon");
+    var use = document.createElementNS(NS, "use");
+    use.setAttribute("href", "#" + id);
+    svg.appendChild(use);
+    btn.appendChild(svg);
+  }
+
   function fail(msg) {
     el.brandName.textContent = "打不开这本书";
+    el.title.textContent = "出错了";
     el.segments.innerHTML = "";
     var p = document.createElement("p");
     p.className = "empty";
     p.textContent = msg;
     el.segments.appendChild(p);
-    el.title.textContent = "出错了";
   }
 
-  /* ---------------- 渲染 ---------------- */
+  /* ---------------- 外观 ---------------- */
   function applyTheme() {
     document.documentElement.setAttribute("data-theme", state.theme);
-    el.themeBtn.textContent = state.theme === "dark" ? "日" : "夜";
+    setIcon(el.themeBtn, state.theme === "dark" ? "i-sun" : "i-moon");
     el.themeBtn.classList.toggle("on", state.theme === "dark");
+    el.themeBtn.title = state.theme === "dark" ? "切换到浅色" : "切换到深色";
     window.STORE.patchSettings({ theme: state.theme });
   }
 
   function applyFont() {
-    var size = window.innerWidth <= 860 ? Math.max(15, state.font - 1) : state.font;
+    var size = window.innerWidth <= 880 ? Math.max(15, state.font - 1) : state.font;
     document.documentElement.style.setProperty("--fs", size + "px");
     window.STORE.patchSettings({ font: state.font });
   }
 
   function applyMode() {
     document.body.classList.toggle("hide-note", !state.showNote);
-    el.modeBtn.textContent = state.showNote ? "对照：开" : "对照：关";
     el.modeBtn.classList.toggle("on", state.showNote);
+    el.modeBtn.title = state.showNote ? "当前显示白话，点击隐藏" : "当前隐藏白话，点击显示";
     window.STORE.patchSettings({ showNote: state.showNote });
   }
 
@@ -59,12 +72,14 @@
     document.title = found.meta.title + " · " + (window.LIBRARY.siteTitle || "读书站");
     el.brandName.textContent = found.meta.title;
     el.brandSub.textContent = found.meta.author || "";
-    el.sideCrumb.textContent = found.cat.name + " / " + found.meta.title;
+    el.sideCrumb.textContent = found.cat.name;
     el.sideTitle.textContent = found.meta.title;
-    el.sideSub.textContent = found.meta.author || "";
-    if (book.intro) { el.sideSub.textContent = (found.meta.author || "") + " · " + book.intro; }
+    el.sideAuthor.textContent = found.meta.author || "";
+    el.sideIntro.textContent = book.intro || "";
+    el.sideIntro.hidden = !book.intro;
   }
 
+  /* ---------------- 目录 ---------------- */
   function renderToc() {
     el.toc.innerHTML = "";
     var prog = window.STORE.bookProgress(found.cat.id, found.meta.id);
@@ -90,6 +105,17 @@
     });
   }
 
+  function refreshTocItem(chapterId, reached) {
+    var ci = book.chapters.map(function (c) { return c.id; }).indexOf(chapterId);
+    var items = el.toc.querySelectorAll(".toc-item small");
+    if (ci < 0 || !items[ci]) { return; }
+    var total = book.chapters[ci].segments.length;
+    items[ci].textContent = reached >= total
+      ? "已读完 · " + total + " 段"
+      : (reached > 0 ? "读到 " + reached + "/" + total + " 段" : total + " 段");
+  }
+
+  /* ---------------- 正文 ---------------- */
   function renderChapter() {
     var c = book.chapters[state.chapter];
     if (!c) { return; }
@@ -135,10 +161,8 @@
     updatePager();
     updateProgress(0, c.segments.length);
     window.scrollTo({ top: 0, behavior: "auto" });
-
     window.STORE.setLastChapter(found.cat.id, found.meta.id, c.id);
 
-    // 地址栏带上当前篇目，方便直接分享/刷新回到这一篇
     var url = "reader.html?book=" + encodeURIComponent(found.meta.id) + "#" + c.id;
     if (window.history && window.history.replaceState) {
       window.history.replaceState(null, "", url);
@@ -176,16 +200,6 @@
     el.progressText.textContent = done + " / " + total + " 段";
   }
 
-  function refreshTocItem(catId, bookId, chapterId, reached) {
-    var ci = book.chapters.map(function (c) { return c.id; }).indexOf(chapterId);
-    var items = el.toc.querySelectorAll(".toc-item small");
-    if (ci < 0 || !items[ci]) { return; }
-    var total = book.chapters[ci].segments.length;
-    items[ci].textContent = reached >= total
-      ? "已读完 · " + total + " 段"
-      : (reached > 0 ? "读到 " + reached + "/" + total + " 段" : total + " 段");
-  }
-
   function go(i) {
     if (i < 0 || i >= book.chapters.length) { return; }
     state.chapter = i;
@@ -204,15 +218,13 @@
 
     observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
-        if (en.isIntersecting) {
-          state.reached[en.target.dataset.index] = true;
-        }
+        if (en.isIntersecting) { state.reached[en.target.dataset.index] = true; }
       });
       var count = 0;
       for (var k in state.reached) { if (state.reached[k]) { count++; } }
       updateProgress(count, total);
       window.STORE.markChapter(found.cat.id, found.meta.id, chapter.id, count, total);
-      refreshTocItem(found.cat.id, found.meta.id, chapter.id, count);
+      refreshTocItem(chapter.id, count);
     }, { rootMargin: "0px 0px -45% 0px", threshold: 0.01 });
 
     Array.prototype.forEach.call(el.segments.children, function (node) {
@@ -220,7 +232,7 @@
     });
   }
 
-  /* ---------------- 侧栏（移动端） ---------------- */
+  /* ---------------- 侧栏 ---------------- */
   function openSidebar() {
     el.sidebar.classList.add("open");
     el.scrim.classList.add("show");
@@ -271,7 +283,7 @@
       if (window.innerWidth !== lastW) {
         lastW = window.innerWidth;
         applyFont();
-        if (window.innerWidth > 860) { closeSidebar(); }
+        if (window.innerWidth > 880) { closeSidebar(); }
       }
     });
   }
@@ -289,18 +301,27 @@
   }
 
   function init() {
-    var bookId = window.readQuery("book");
-    if (!bookId) { fail("没有指定书。请从书架进入。"); return; }
-
-    found = window.findBook(bookId);
-    if (!found) { fail("书架上找不到 id 为「" + bookId + "」的书，请检查 books/manifest.js。"); return; }
+    // 先把图标和外观铺好，不等书加载完——否则慢网络下会先看到一排空白按钮
+    setIcon(el.menuBtn, "i-menu");
+    setIcon(el.modeBtn, "i-para");
+    setIcon(el.fontDec, "i-minus");
+    setIcon(el.fontInc, "i-plus");
 
     var s = window.STORE.settings();
     state.showNote = s.showNote;
     state.theme = s.theme || document.documentElement.getAttribute("data-theme") || "light";
     state.font = s.font;
 
-    // 书的数据文件按需加载，不预载全部书
+    applyTheme();
+    applyFont();
+    applyMode();
+
+    var bookId = window.readQuery("book");
+    if (!bookId) { fail("没有指定书。请从书架进入。"); return; }
+
+    found = window.findBook(bookId);
+    if (!found) { fail("书架上找不到 id 为「" + bookId + "」的书，请检查 books/manifest.js。"); return; }
+
     window.loadScript(found.meta.file).then(function () {
       book = (window.BOOKS || {})[bookId];
       if (!book || !book.chapters || !book.chapters.length) {
@@ -308,7 +329,6 @@
         return;
       }
 
-      // 记下总段数，书架页就不用加载整本书也能算进度
       var totalSeg = 0;
       book.chapters.forEach(function (c) { totalSeg += c.segments.length; });
       window.STORE.setTotal(found.cat.id, found.meta.id, totalSeg, book.chapters.length);
@@ -316,9 +336,6 @@
       state.chapter = startChapterIndex();
 
       renderBrand();
-      applyTheme();
-      applyFont();
-      applyMode();
       renderToc();
       renderChapter();
       renderHooks();
