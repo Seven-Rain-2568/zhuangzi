@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>庄子选读</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <button class="icon-btn menu-btn" id="menuBtn" aria-label="打开目录">☰</button>
+  <div class="brand">
+    <span class="brand-name" id="brandName">庄子选读</span>
+    <span class="brand-sub" id="brandSub"></span>
+  </div>
+  <div class="tools">
+    <button class="icon-btn" id="modeBtn" title="显示或隐藏白话">对照：开</button>
+    <button class="icon-btn" id="fontDec" title="缩小字号">A−</button>
+    <button class="icon-btn" id="fontInc" title="放大字号">A+</button>
+    <button class="icon-btn" id="themeBtn" title="切换深色/浅色">夜</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="side-intro">
+      <h1 id="sideTitle"></h1>
+      <p id="sideSub"></p>
+    </div>
+    <nav class="toc" id="toc" aria-label="目录"></nav>
+    <div class="side-tip" id="sideIntro"></div>
+  </aside>
+
+  <div class="scrim" id="scrim"></div>
+
+  <main class="reader" id="reader">
+    <article class="paper">
+
+      <header class="chapter-head">
+        <p class="chapter-source" id="chapterSource"></p>
+        <h2 class="chapter-title" id="chapterTitle"></h2>
+        <p class="chapter-summary" id="chapterSummary"></p>
+        <div class="chapter-tags" id="chapterTags"></div>
+      </header>
+
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <span class="progress-text" id="progressText">0 / 0 段</span>
+      </div>
+
+      <div class="segments" id="segments"></div>
+
+      <nav class="pager">
+        <button class="pager-btn" id="prevBtn">← 上一篇</button>
+        <button class="pager-btn" id="nextBtn">下一篇 →</button>
+      </nav>
+
+      <footer class="foot">
+        原文为公有领域古籍；白话与导读为本站整理，仅供自己读着用。
+      </footer>
+
+    </article>
+  </main>
+
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
